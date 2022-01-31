@@ -1,1 +1,1 @@
-# Just a react web
+# Just a web using React
