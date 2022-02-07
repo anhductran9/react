@@ -12,7 +12,7 @@ const App = () => {
     axios
       .get('http://localhost:3001/notes')
       .then(response => {
-        console.log('promise fulfilled)
+        console.log('promise fulfilled')
         setNotes(response.data)
       })
   }, [])
