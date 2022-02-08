@@ -1,88 +1,92 @@
-import React, { useState, useEffect } from 'react'
-import Note from './components/Note'
-import noteService from './services/notes'
+import React, { useState, useEffect } from "react";
+import Person from "./components/Person";
+import personService from "./services/persons";
 
 const App = () => {
-  const [notes, setNotes] = useState([])
-  const [newNote, setNewNote] = useState('')
-  const [showAll, setShowAll] = useState(false)
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState(" ");
+  const [newNumber, setNewNumber] = useState(" ");
+  const [filteredName, setFilteredName] = useState(persons);
 
   useEffect(() => {
-    noteService
+    personService
       .getAll()
-      .then(initialNotes => {
-      setNotes(initialNotes)
-    })
-  }, [])
-
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      date: new Date().toISOString(),
-      important: Math.random() > 0.5,
-    }
-
-    noteService
-      .create(noteObject)
-        .then(returnedNote => {
-        setNotes(notes.concat(returnedNote))
-        setNewNote('')
+      .then(initialPersons => {
+        setPersons(initialPersons);
       })
-  }
+  }, []);
 
-  const toggleImportanceOf = id => {
-    const note = notes.find(n => n.id === id)
-    const changedNote = { ...note, important: !note.important }
-  
-    noteService
-    .update(id, changedNote)
-      .then(returnedNote => {
-      setNotes(notes.map(note => note.id !== id ? note : returnedNote))
-    })
-    .catch(error => {
-      alert(
-        `the note '${note.content}' was already deleted from server`
-      )
-      setNotes(notes.filter(n => n.id !== id))
-    })    
-  }
+  const addName = (event) => {
+    event.preventDefault();
+    //checks whether a name is exist
+    const exist = persons.some((persons) => persons.name === newName);
+    const nameObject = {
+      name: newName,
+      id: persons.length + 1,
+    };
+    const numberObject = {
+      number: newNumber,
+      id: persons.length + 1,
+    };
+    let merged = { ...nameObject, ...numberObject };
+    if (exist) {
+      alert(`${newName} is already added to phonebook`);
+    } else {
+      setPersons(persons.concat(merged));
+      setNewName("");
+      setNewNumber("");
+    }
+    personService
+      .create(merged)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson));
+        setNewName('')
+        setNewNumber('')
+      })
+  };
 
-  const handleNoteChange = (event) => {
-    console.log(event.target.value)
-    setNewNote(event.target.value)
-  }
+  const handleNameChange = (event) => {
+    console.log(event.target.value);
+    setNewName(event.target.value);
+  };
 
-  const notesToShow = showAll
-  ? notes
-  : notes.filter(note => note.important)
+  const handleNumberChange = (event) => {
+    console.log(event.target.value);
+    setNewNumber(event.target.value);
+  };
+
+  const handleFilterChange = (event) => {
+    event.preventDefault();
+    setFilteredName(persons.filter(person => person.name.includes(event.target.value)))
+  };
 
   return (
     <div>
-      <h1>Notes</h1>
       <div>
-        <button onClick={() => setShowAll(!showAll)}>
-          show {showAll ? 'important' : 'all' }
-        </button>
-      </div>   
+        <h2>Phonebook</h2>
+        filter: <input 
+        onChange={handleFilterChange} />
+        <ul>
+          {filteredName.map((person) => <Person key={person.id} person={person} />)}
+        </ul>
+      </div>
+      <form onSubmit={addName}>
+        <div>
+          name: <input value={newName} onChange={handleNameChange} />
+        </div>
+        <div>
+          number: <input value={newNumber} onChange={handleNumberChange} />
+        </div>
+        <div>
+          <button type="submit">add</button>
+        </div>
+      </form>
       <ul>
-        {notesToShow.map(note => 
-            <Note
-              key={note.id}
-              note={note} 
-              toggleImportance={() => toggleImportanceOf(note.id)}
-            />
+        {persons.map((person) => <Person key={person.id} person={person} />
         )}
       </ul>
-      <form onSubmit={addNote}>
-        <input
-          value={newNote}
-          onChange={handleNoteChange}
-        />
-        <button type="submit">save</button>
-      </form>  
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
