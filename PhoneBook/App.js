@@ -1,45 +1,48 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Person from "./components/Person";
+import personService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState(" ");
   const [newNumber, setNewNumber] = useState(" ");
-  const [nameFilter, setNameFilter] = useState("");
   const [filteredName, setFilteredName] = useState(persons);
 
   useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
+    personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons);
       })
-  }, [])
-  console.log('render', persons.length, 'persons')
+  }, []);
 
   const addName = (event) => {
     event.preventDefault();
     //checks whether a name is exist
     const exist = persons.some((persons) => persons.name === newName);
+    const nameObject = {
+      name: newName,
+      id: persons.length + 1,
+    };
+    const numberObject = {
+      number: newNumber,
+      id: persons.length + 1,
+    };
+    let merged = { ...nameObject, ...numberObject };
     if (exist) {
       alert(`${newName} is already added to phonebook`);
     } else {
-      const nameObject = {
-        name: newName,
-        id: persons.length + 1,
-      };
-      const numberObject = {
-        number: newNumber,
-        id: persons.length + 1,
-      };
-      let merged = { ...nameObject, ...numberObject };
       setPersons(persons.concat(merged));
       setNewName("");
       setNewNumber("");
     }
+    personService
+      .create(merged)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson));
+        setNewName('')
+        setNewNumber('')
+      })
   };
 
   const handleNameChange = (event) => {
