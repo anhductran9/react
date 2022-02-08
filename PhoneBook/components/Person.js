@@ -9,6 +9,13 @@ const Person = ({person})=>{
       axios.delete(`http://localhost:3001/persons/${person.id}`).then(() => console.log('delete: ' + person.id))
     }
   }
+
+  const alertReplace = (event) => {
+    const tluser = window.confirm('Replace' + person.number + '?');  
+    if (tluser) {
+      axios.replace(`http://localhost:3001/persons/${person.id}`).then(() => console.log('replace: ' + person.id))
+    }
+  }
   return (
     <li>
       {person.name}{person.number} <button onClick={alertDelete}>Delete</button>
