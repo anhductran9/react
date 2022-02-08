@@ -4,37 +4,49 @@ import personService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
-  const [newName, setNewName] = useState(" ");
-  const [newNumber, setNewNumber] = useState(" ");
+  const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
   const [filteredName, setFilteredName] = useState(persons);
-
+  const [updateData, setUpdateData] = useState(0)
   useEffect(() => {
     personService
       .getAll()
       .then(initialPersons => {
         setPersons(initialPersons);
       })
-  }, []);
+  }, [updateData]);
 
   const addName = (event) => {
     event.preventDefault();
     //checks whether a name is exist
-    const exist = persons.some((persons) => persons.name === newName);
+    let exist = 0
+    for (let person of persons) {
+      if (person.name === newName) {
+        exist = person.id
+        break;
+      }
+    }
+    console.log('Exist: ' + exist)
     const nameObject = {
       name: newName,
       id: persons.length + 1,
     };
     const numberObject = {
       number: newNumber,
-      id: persons.length + 1,
+      id: exist ? exist : persons.length + 1,
     };
     let merged = { ...nameObject, ...numberObject };
     if (exist) {
-      alert(`${newName} is already added to phonebook`);
+      let confirmReplace = window.confirm(`${newName} is already added to phonebook`);
+      if (confirmReplace) {
+        personService.replaceData(exist, merged).then((res) => console.log(res))
+        setUpdateData(updateData + 1)
+      }
     } else {
       setPersons(persons.concat(merged));
       setNewName("");
       setNewNumber("");
+      setUpdateData(updateData + 1)
     }
     personService
       .create(merged)
