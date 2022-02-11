@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import Person from "./components/Person";
 import personService from "./services/persons";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filteredName, setFilteredName] = useState(persons);
-  const [updateData, setUpdateData] = useState(0)
+  const [updateData, setUpdateData] = useState(0);
+  const [message, setMessage] = useState('');
+
   useEffect(() => {
     personService
       .getAll()
@@ -54,6 +57,24 @@ const App = () => {
         setPersons(persons.concat(returnedPerson));
         setNewName('')
         setNewNumber('')
+        setMessage(
+          `${merged} was successfully added to phonebook`
+        )
+        setTimeout(() => {
+          setMessage(null)
+        }, 5000)
+      })
+      .catch((error) => {
+        console.log(error)
+        setUpdateData(updateData.filter(person => person.id !== merged.id))
+        setNewName('')
+        setNewNumber('')
+        setMessage(
+          null
+        )
+        setTimeout(() => {
+          setMessage(null)
+        }, 5000)
       })
   };
 
@@ -76,6 +97,7 @@ const App = () => {
     <div>
       <div>
         <h2>Phonebook</h2>
+        <Notification message={message} />
         filter: <input 
         onChange={handleFilterChange} />
         <ul>
